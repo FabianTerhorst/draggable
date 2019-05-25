@@ -365,13 +365,13 @@ export default class Draggable {
       return;
     }
 
-    if (this.options.handle && target && !closest(target, this.options.handle)) {
+    if (this.options.handle && target && !closest(target, this.options.handle, this.hosts[0])) {
       sensorEvent.cancel();
       return;
     }
 
     // Find draggable source element
-    this.originalSource = closest(target, this.options.draggable);
+    this.originalSource = closest(target, this.options.draggable, this.hosts[0]);
     this.sourceContainer = container;
 
     if (!this.originalSource) {
@@ -410,8 +410,8 @@ export default class Draggable {
     this.source.classList.add(this.getClassNameFor('source:dragging'));
     this.sourceContainer.classList.add(this.getClassNameFor('container:dragging'));
     this.hosts.forEach((host) => {
-      host.documentElement.classList.add(this.getClassNameFor('body:dragging'));
-      applyUserSelect(host.documentElement, 'none');
+      host.host.classList.add(this.getClassNameFor('body:dragging'));
+      applyUserSelect(host.host, 'none');
     });
 
     requestAnimationFrame(() => {
@@ -452,8 +452,8 @@ export default class Draggable {
       sensorEvent.cancel();
     }
 
-    target = closest(target, this.options.draggable);
-    const withinCorrectContainer = closest(sensorEvent.target, this.containers);
+    target = closest(target, this.options.draggable, this.hosts[0]);
+    const withinCorrectContainer = closest(sensorEvent.target, this.containers, this.hosts[0]);
     const overContainer = sensorEvent.overContainer || withinCorrectContainer;
     const isLeavingContainer = this.currentOverContainer && overContainer !== this.currentOverContainer;
     const isLeavingDraggable = this.currentOver && target !== this.currentOver;
@@ -555,8 +555,8 @@ export default class Draggable {
     this.sourceContainer.classList.add(this.getClassNameFor('container:placed'));
     this.sourceContainer.classList.remove(this.getClassNameFor('container:dragging'));
     this.hosts.forEach((host) => {
-      host.documentElement.classList.remove(this.getClassNameFor('body:dragging'));
-      applyUserSelect(host.documentElement, '');
+      host.host.classList.remove(this.getClassNameFor('body:dragging'));
+      applyUserSelect(host.host, '');
     });
 
     if (this.currentOver) {
@@ -601,7 +601,7 @@ export default class Draggable {
     }
 
     const sensorEvent = getSensorEvent(event);
-    const source = this.source || closest(sensorEvent.originalEvent.target, this.options.draggable);
+    const source = this.source || closest(sensorEvent.originalEvent.target, this.options.draggable, this.hosts[0]);
 
     const dragPressureEvent = new DragPressureEvent({
       sensorEvent,

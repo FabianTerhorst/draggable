@@ -317,5 +317,5 @@ function closestScrollableElement(element) {
  * @private
  */
 function getDocumentScrollingElement(host) {
-  return host.scrollingElement || host.documentElement;
+  return host.scrollingElement || host.host || host.documentElement;
 }

@@ -1,3 +1,4 @@
+/*
 function matchFunction({defaultView: view}) {
   return (
     view.Element.prototype.matches ||
@@ -6,21 +7,33 @@ function matchFunction({defaultView: view}) {
     view.Element.prototype.msMatchesSelector
   );
 }
+*/
+
+/*
+const matchFunction =
+  Element.prototype.matches ||
+  Element.prototype.webkitMatchesSelector ||
+  Element.prototype.mozMatchesSelector ||
+  Element.prototype.msMatchesSelector;
+  */
 /**
  * Get the closest parent element of a given element that matches the given
  * selector string or matching function
  *
  * @param {Element} element The child element to find a parent of
- * @param {String|Function} selector The string or function to use to match
+ * @param {String|Function} value The string or function to use to match
  *     the parent element
+ * @param {Document} currHost The host
  * @return {Element|null}
  */
-export default function closest(element, value) {
+export default function closest(element, value, currHost = undefined) {
   if (!element) {
     return null;
   }
-
-  const host = element.ownerDocument;
+  let host = currHost;
+  if (!host) {
+    host = element.ownerDocument;
+  }
 
   const selector = value;
   const callback = value;
@@ -36,7 +49,7 @@ export default function closest(element, value) {
     if (!currentElement) {
       return currentElement;
     } else if (isSelector) {
-      return matchFunction(host).call(currentElement, selector);
+      return currentElement.matches(selector); // matchFunction.call(currentElement, selector); /* (host) */
     } else if (isNodeList) {
       return [...nodeList].includes(currentElement);
     } else if (isElement) {
@@ -58,7 +71,7 @@ export default function closest(element, value) {
     }
 
     current = current.parentNode;
-  } while (current && current !== host.documentElement && current !== host);
+  } while (current && current !== host.host && current !== host);
 
   return null;
 }

@@ -136,7 +136,7 @@ export default class Droppable extends Draggable {
     }
 
     this.dropzones = [...this[getDropzones]()];
-    const dropzone = closest(event.sensorEvent.target, this.options.dropzone);
+    const dropzone = closest(event.sensorEvent.target, this.options.dropzone, this.hosts[0]);
 
     if (!dropzone) {
       event.cancel();
@@ -277,7 +277,7 @@ export default class Droppable extends Draggable {
       return null;
     }
 
-    return closest(target, this.dropzones);
+    return closest(target, this.dropzones, this.hosts[0]);
   }
 
   /**
@@ -289,9 +289,11 @@ export default class Droppable extends Draggable {
     const dropzone = this.options.dropzone;
 
     if (typeof dropzone === 'string') {
-      let dropZones = [];
+      const dropZones = [];
       this.hosts.forEach((host) => {
-        dropZones = dropZones.concat(host.querySelectorAll(dropzone));
+        host.querySelectorAll(dropzone).forEach((dropZone) => {
+          dropZones.push(dropZone);
+        });
       });
       return dropZones;
     } else if (dropzone instanceof NodeList || dropzone instanceof Array) {
