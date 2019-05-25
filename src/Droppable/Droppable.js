@@ -67,9 +67,10 @@ export default class Droppable extends Draggable {
    * @constructs Droppable
    * @param {HTMLElement[]|NodeList|HTMLElement} containers - Droppable containers
    * @param {Object} options - Options for Droppable
+   * @param {DocumentOrShadowRoot[]} hosts - Hosts
    */
-  constructor(containers = [], options = {}) {
-    super(containers, {
+  constructor(containers = [], options = {}, hosts = [document]) {
+    const constOptions = {
       ...defaultOptions,
       ...options,
       classes: {
@@ -80,7 +81,8 @@ export default class Droppable extends Draggable {
         ...defaultAnnouncements,
         ...(options.announcements || {}),
       },
-    });
+    };
+    super(containers, constOptions, hosts);
 
     /**
      * All dropzone elements on drag start
@@ -287,7 +289,11 @@ export default class Droppable extends Draggable {
     const dropzone = this.options.dropzone;
 
     if (typeof dropzone === 'string') {
-      return document.querySelectorAll(dropzone);
+      let dropZones = [];
+      this.hosts.forEach((host) => {
+        dropZones = dropZones.concat(host.querySelectorAll(dropzone));
+      });
+      return dropZones;
     } else if (dropzone instanceof NodeList || dropzone instanceof Array) {
       return dropzone;
     } else if (typeof dropzone === 'function') {

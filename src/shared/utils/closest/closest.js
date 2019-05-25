@@ -1,9 +1,11 @@
-const matchFunction =
-  Element.prototype.matches ||
-  Element.prototype.webkitMatchesSelector ||
-  Element.prototype.mozMatchesSelector ||
-  Element.prototype.msMatchesSelector;
-
+function matchFunction({defaultView: view}) {
+  return (
+    view.Element.prototype.matches ||
+    view.Element.prototype.webkitMatchesSelector ||
+    view.Element.prototype.mozMatchesSelector ||
+    view.Element.prototype.msMatchesSelector
+  );
+}
 /**
  * Get the closest parent element of a given element that matches the given
  * selector string or matching function
@@ -17,6 +19,8 @@ export default function closest(element, value) {
   if (!element) {
     return null;
   }
+
+  const host = element.ownerDocument;
 
   const selector = value;
   const callback = value;
@@ -32,7 +36,7 @@ export default function closest(element, value) {
     if (!currentElement) {
       return currentElement;
     } else if (isSelector) {
-      return matchFunction.call(currentElement, selector);
+      return matchFunction(host).call(currentElement, selector);
     } else if (isNodeList) {
       return [...nodeList].includes(currentElement);
     } else if (isElement) {
@@ -54,7 +58,7 @@ export default function closest(element, value) {
     }
 
     current = current.parentNode;
-  } while (current && current !== document.body && current !== document);
+  } while (current && current !== host.documentElement && current !== host);
 
   return null;
 }
