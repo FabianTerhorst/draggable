@@ -79,23 +79,21 @@ export default class MouseSensor extends Sensor {
     // currentHost.addEventListener('dragstart', preventNativeDragStart);
 
     let target = null;
-    let currHost = null;
+    let container = null;
     for (const host of this.hosts) {
-      currHost = host;
       target = host.elementFromPoint(event.clientX, event.clientY);
       if (target) {
-        host.addEventListener('dragstart', preventNativeDragStart);
-        break;
+        container = closest(target, this.containers, [host]);
+        if (container) {
+          host.addEventListener('dragstart', preventNativeDragStart);
+          break;
+        } else {
+          target = null;
+        }
       }
     }
 
-    if (!target) {
-      return;
-    }
-
-    const container = closest(target, this.containers, currHost);
-
-    if (!container) {
+    if (!target || !container) {
       return;
     }
 
@@ -139,18 +137,30 @@ export default class MouseSensor extends Sensor {
       return;
     }
 
-    let target = null;
+    let currTarget = null;
     for (const host of this.hosts) {
-      target = host.elementFromPoint(event.clientX, event.clientY);
+      const target = host.elementFromPoint(event.clientX, event.clientY);
       if (target) {
-        break;
+        let invalidFound = false;
+        for (const currHost of this.hosts) {
+          if (currHost.host === target) {
+            invalidFound = true;
+          }
+        }
+        if (!invalidFound) {
+          currTarget = target;
+        }
       }
+    }
+
+    if (!currTarget) {
+      return;
     }
 
     const dragMoveEvent = new DragMoveSensorEvent({
       clientX: event.clientX,
       clientY: event.clientY,
-      target,
+      currTarget,
       container: this.currentContainer,
       originalEvent: event,
     });

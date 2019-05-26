@@ -119,7 +119,7 @@ export default class Scrollable extends AbstractPlugin {
    */
   getScrollableElement(target) {
     if (this.hasDefinedScrollableElements()) {
-      return closest(target, this.options.scrollableElements) || document.documentElement;
+      return closest(target, this.options.scrollableElements, this.draggable.hosts) || document.documentElement;
     } else {
       return closestScrollableElement(target);
     }

@@ -23,18 +23,27 @@ const matchFunction =
  * @param {Element} element The child element to find a parent of
  * @param {String|Function} value The string or function to use to match
  *     the parent element
- * @param {Document} currHost The host
+ * @param {Document[]} currHosts The host
  * @return {Element|null}
  */
-export default function closest(element, value, currHost = undefined) {
+export default function closest(element, value, currHosts = undefined) {
   if (!element) {
     return null;
   }
-  let host = currHost;
-  if (!host) {
-    host = element.ownerDocument;
+  let hosts = currHosts;
+  if (!hosts) {
+    hosts = [element.ownerDocument];
   }
+  for (const host of hosts) {
+    const closestElement = closestSingle(element, value, host);
+    if (closestElement != null) {
+      return closestElement;
+    }
+  }
+  return null;
+}
 
+function closestSingle(element, value, host) {
   const selector = value;
   const callback = value;
   const nodeList = value;
@@ -46,17 +55,21 @@ export default function closest(element, value, currHost = undefined) {
   const isElement = Boolean(value instanceof HTMLElement);
 
   function conditionFn(currentElement) {
-    if (!currentElement) {
-      return currentElement;
-    } else if (isSelector) {
-      return currentElement.matches(selector); // matchFunction.call(currentElement, selector); /* (host) */
-    } else if (isNodeList) {
-      return [...nodeList].includes(currentElement);
-    } else if (isElement) {
-      return singleElement === currentElement;
-    } else if (isFunction) {
-      return callback(currentElement);
-    } else {
+    try {
+      if (!currentElement) {
+        return currentElement;
+      } else if (isSelector) {
+        return currentElement.matches(selector); // matchFunction.call(currentElement, selector); /* (host) */
+      } else if (isNodeList) {
+        return [...nodeList].includes(currentElement);
+      } else if (isElement) {
+        return singleElement === currentElement;
+      } else if (isFunction) {
+        return callback(currentElement);
+      } else {
+        return null;
+      }
+    } catch (_) {
       return null;
     }
   }

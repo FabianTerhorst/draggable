@@ -136,7 +136,7 @@ export default class Droppable extends Draggable {
     }
 
     this.dropzones = [...this[getDropzones]()];
-    const dropzone = closest(event.sensorEvent.target, this.options.dropzone, this.hosts[0]);
+    const dropzone = closest(event.sensorEvent.target, this.options.dropzone, this.hosts);
 
     if (!dropzone) {
       event.cancel();
@@ -175,7 +175,6 @@ export default class Droppable extends Draggable {
     if (event.canceled()) {
       return;
     }
-
     const dropzone = this[closestDropzone](event.sensorEvent.target);
     const overEmptyDropzone = dropzone && !dropzone.classList.contains(this.getClassNameFor('droppable:occupied'));
 
@@ -277,7 +276,7 @@ export default class Droppable extends Draggable {
       return null;
     }
 
-    return closest(target, this.dropzones, this.hosts[0]);
+    return closest(target, this.dropzones, this.hosts);
   }
 
   /**
@@ -292,6 +291,7 @@ export default class Droppable extends Draggable {
       const dropZones = [];
       this.hosts.forEach((host) => {
         host.querySelectorAll(dropzone).forEach((dropZone) => {
+          dropZone.host = host;
           dropZones.push(dropZone);
         });
       });

@@ -91,7 +91,7 @@ export default class TouchSensor extends Sensor {
    * @param {Event} event - Touch start event
    */
   [onTouchStart](event) {
-    const container = closest(event.target, this.containers);
+    const container = closest(event.target, this.containers, this.hosts);
 
     if (!container) {
       return;

@@ -365,13 +365,13 @@ export default class Draggable {
       return;
     }
 
-    if (this.options.handle && target && !closest(target, this.options.handle, this.hosts[0])) {
+    if (this.options.handle && target && !closest(target, this.options.handle, this.hosts)) {
       sensorEvent.cancel();
       return;
     }
 
     // Find draggable source element
-    this.originalSource = closest(target, this.options.draggable, this.hosts[0]);
+    this.originalSource = closest(target, this.options.draggable, this.hosts);
     this.sourceContainer = container;
 
     if (!this.originalSource) {
@@ -452,8 +452,8 @@ export default class Draggable {
       sensorEvent.cancel();
     }
 
-    target = closest(target, this.options.draggable, this.hosts[0]);
-    const withinCorrectContainer = closest(sensorEvent.target, this.containers, this.hosts[0]);
+    target = closest(target, this.options.draggable, this.hosts);
+    const withinCorrectContainer = closest(sensorEvent.target, this.containers, this.hosts);
     const overContainer = sensorEvent.overContainer || withinCorrectContainer;
     const isLeavingContainer = this.currentOverContainer && overContainer !== this.currentOverContainer;
     const isLeavingDraggable = this.currentOver && target !== this.currentOver;
@@ -601,7 +601,7 @@ export default class Draggable {
     }
 
     const sensorEvent = getSensorEvent(event);
-    const source = this.source || closest(sensorEvent.originalEvent.target, this.options.draggable, this.hosts[0]);
+    const source = this.source || closest(sensorEvent.originalEvent.target, this.options.draggable, this.hosts);
 
     const dragPressureEvent = new DragPressureEvent({
       sensorEvent,
