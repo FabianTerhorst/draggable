@@ -137,30 +137,30 @@ export default class MouseSensor extends Sensor {
       return;
     }
 
-    let currTarget = null;
+    let target = null;
     for (const host of this.hosts) {
-      const target = host.elementFromPoint(event.clientX, event.clientY);
-      if (target) {
+      const curr = host.elementFromPoint(event.clientX, event.clientY);
+      if (curr) {
         let invalidFound = false;
         for (const currHost of this.hosts) {
-          if (currHost.host === target) {
+          if (currHost.host === curr) {
             invalidFound = true;
           }
         }
         if (!invalidFound) {
-          currTarget = target;
+          target = curr;
         }
       }
     }
 
-    if (!currTarget) {
+    if (!target) {
       return;
     }
 
     const dragMoveEvent = new DragMoveSensorEvent({
       clientX: event.clientX,
       clientY: event.clientY,
-      currTarget,
+      target,
       container: this.currentContainer,
       originalEvent: event,
     });
