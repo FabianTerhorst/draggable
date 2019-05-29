@@ -410,8 +410,9 @@ export default class Draggable {
     this.source.classList.add(this.getClassNameFor('source:dragging'));
     this.sourceContainer.classList.add(this.getClassNameFor('container:dragging'));
     this.hosts.forEach((host) => {
-      host.host.classList.add(this.getClassNameFor('body:dragging'));
-      applyUserSelect(host.host, 'none');
+      const currHost = host.host || host.body;
+      currHost.classList.add(this.getClassNameFor('body:dragging'));
+      applyUserSelect(currHost, 'none');
     });
 
     requestAnimationFrame(() => {
@@ -555,8 +556,9 @@ export default class Draggable {
     this.sourceContainer.classList.add(this.getClassNameFor('container:placed'));
     this.sourceContainer.classList.remove(this.getClassNameFor('container:dragging'));
     this.hosts.forEach((host) => {
-      host.host.classList.remove(this.getClassNameFor('body:dragging'));
-      applyUserSelect(host.host, '');
+      const currHost = host.host || host.body;
+      currHost.classList.remove(this.getClassNameFor('body:dragging'));
+      applyUserSelect(currHost, '');
     });
 
     if (this.currentOver) {
