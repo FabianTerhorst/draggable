@@ -84,7 +84,7 @@ function closestSingle(element, value, host) {
     }
 
     current = current.parentNode;
-  } while (current && current !== host.host && current !== host);
+  } while (current && current !== (host.host || host.body) && current !== host);
 
   return null;
 }
