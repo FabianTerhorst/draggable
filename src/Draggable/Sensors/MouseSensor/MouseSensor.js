@@ -45,6 +45,12 @@ export default class MouseSensor extends Sensor {
      */
     this.openedContextMenu = false;
 
+    /**
+     * Attached or not
+     * @type {boolean}
+     */
+    this.attached = false;
+
     this[onContextMenuWhileDragging] = this[onContextMenuWhileDragging].bind(this);
     this[onMouseDown] = this[onMouseDown].bind(this);
     this[onMouseMove] = this[onMouseMove].bind(this);
@@ -57,9 +63,12 @@ export default class MouseSensor extends Sensor {
    */
   addHost(...hosts) {
     super.addHost(...hosts);
-    hosts.forEach((host) => {
-      host.addEventListener('mousedown', this[onMouseDown], true);
-    });
+    if (this.attached) {
+      hosts.forEach((host) => {
+        host.removeEventListener('mousedown', this[onMouseDown], true);
+        host.addEventListener('mousedown', this[onMouseDown], true);
+      });
+    }
   }
 
   /**
@@ -68,15 +77,18 @@ export default class MouseSensor extends Sensor {
    */
   removeHost(...hosts) {
     super.removeHost(...hosts);
-    hosts.forEach((host) => {
-      host.removeEventListener('mousedown', this[onMouseDown], true);
-    });
+    if (this.attached) {
+      hosts.forEach((host) => {
+        host.removeEventListener('mousedown', this[onMouseDown], true);
+      });
+    }
   }
 
   /**
    * Attaches sensors event listeners to the DOM
    */
   attach() {
+    this.attached = true;
     this.addHostsEventListener('mousedown', this[onMouseDown], true);
   }
 
@@ -84,6 +96,7 @@ export default class MouseSensor extends Sensor {
    * Detaches sensors event listeners to the DOM
    */
   detach() {
+    this.attached = false;
     this.removeHostsEventListener('mousedown', this[onMouseDown], true);
   }
 

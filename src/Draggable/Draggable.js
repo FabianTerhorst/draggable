@@ -283,14 +283,19 @@ export default class Draggable {
    * @example draggable.addHost(document)
    */
   addHost(...hosts) {
-    this.hosts = [...this.hosts, ...hosts];
-    hosts.forEach((host) => {
+    const newHosts = hosts.filter((host) => !this.hosts.includes(host));
+    newHosts.forEach((host) => {
+      host.removeEventListener('drag:start', this[onDragStart], true);
+      host.removeEventListener('drag:move', this[onDragMove], true);
+      host.removeEventListener('drag:stop', this[onDragStop], true);
+      host.removeEventListener('drag:pressure', this[onDragPressure], true);
       host.addEventListener('drag:start', this[onDragStart], true);
       host.addEventListener('drag:move', this[onDragMove], true);
       host.addEventListener('drag:stop', this[onDragStop], true);
       host.addEventListener('drag:pressure', this[onDragPressure], true);
     });
-    this.sensors.forEach((sensor) => sensor.addHost(...hosts));
+    this.hosts = [...this.hosts, ...newHosts];
+    this.sensors.forEach((sensor) => sensor.addHost(...newHosts));
     return this;
   }
 
@@ -301,13 +306,13 @@ export default class Draggable {
    * @example draggable.removeHost(document)
    */
   removeHost(...hosts) {
-    this.hosts = this.hosts.filter((container) => !hosts.includes(container));
     hosts.forEach((host) => {
       host.removeEventListener('drag:start', this[onDragStart], true);
       host.removeEventListener('drag:move', this[onDragMove], true);
       host.removeEventListener('drag:stop', this[onDragStop], true);
       host.removeEventListener('drag:pressure', this[onDragPressure], true);
     });
+    this.hosts = this.hosts.filter((container) => !hosts.includes(container));
     this.sensors.forEach((sensor) => sensor.removeHost(...hosts));
     return this;
   }
