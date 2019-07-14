@@ -52,6 +52,28 @@ export default class MouseSensor extends Sensor {
   }
 
   /**
+   * Add hosts. Needs fix when not attached ect.
+   * @param hosts
+   */
+  addHost(...hosts) {
+    super.addHost(...hosts);
+    hosts.forEach((host) => {
+      host.addEventListener('mousedown', this[onMouseDown], true);
+    });
+  }
+
+  /**
+   * Remove hosts. Needs fix when not attached ect.
+   * @param hosts
+   */
+  removeHost(...hosts) {
+    super.removeHost(...hosts);
+    hosts.forEach((host) => {
+      host.removeEventListener('mousedown', this[onMouseDown], true);
+    });
+  }
+
+  /**
    * Attaches sensors event listeners to the DOM
    */
   attach() {
@@ -62,7 +84,7 @@ export default class MouseSensor extends Sensor {
    * Detaches sensors event listeners to the DOM
    */
   detach() {
-    this.addHostsEventListener('mousedown', this[onMouseDown], true);
+    this.removeHostsEventListener('mousedown', this[onMouseDown], true);
   }
 
   /**
@@ -93,7 +115,7 @@ export default class MouseSensor extends Sensor {
       }
     }
 
-    if (!target || !container) {
+    if (!container) {
       return;
     }
 
@@ -151,10 +173,6 @@ export default class MouseSensor extends Sensor {
           target = curr;
         }
       }
-    }
-
-    if (!target) {
-      return;
     }
 
     const dragMoveEvent = new DragMoveSensorEvent({

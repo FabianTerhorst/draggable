@@ -82,6 +82,24 @@ export default class Sensor {
     this.containers = this.containers.filter((container) => !containers.includes(container));
   }
 
+  /**
+   * Adds container to this sensor instance
+   * @param {...HTMLElement} hosts - Containers you want to add to this sensor
+   * @example draggable.addHost(document)
+   */
+  addHost(...hosts) {
+    this.hosts = [...this.hosts, ...hosts];
+  }
+
+  /**
+   * Removes container from this sensor instance
+   * @param {...HTMLElement} hosts - Containers you want to remove from this sensor
+   * @example draggable.removeHost(document)
+   */
+  removeHost(...hosts) {
+    this.hosts = this.hosts.filter((host) => !hosts.includes(host));
+  }
+
   addHostsEventListener(type, callback, options) {
     this.hosts.forEach((host) => {
       host.addEventListener(type, callback, options);

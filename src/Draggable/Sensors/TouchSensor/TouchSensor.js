@@ -72,6 +72,28 @@ export default class TouchSensor extends Sensor {
   }
 
   /**
+   * Add hosts. Needs fix when not attached ect.
+   * @param hosts
+   */
+  addHost(...hosts) {
+    super.addHost(...hosts);
+    hosts.forEach((host) => {
+      host.addEventListener('touchstart', this[onTouchStart], true);
+    });
+  }
+
+  /**
+   * Remove hosts. Needs fix when not attached ect.
+   * @param hosts
+   */
+  removeHost(...hosts) {
+    super.removeHost(...hosts);
+    hosts.forEach((host) => {
+      host.removeEventListener('touchstart', this[onTouchStart], true);
+    });
+  }
+
+  /**
    * Attaches sensors event listeners to the DOM
    */
   attach() {
