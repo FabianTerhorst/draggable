@@ -39,9 +39,10 @@ export default class TouchSensor extends Sensor {
    * @constructs TouchSensor
    * @param {HTMLElement[]|NodeList|HTMLElement} containers - Containers
    * @param {Object} options - Options
+   * @param {DocumentOrShadowRoot} hosts - Hosts
    */
-  constructor(containers = [], options = {}) {
-    super(containers, options);
+  constructor(containers = [], options = {}, hosts = []) {
+    super(containers, options, hosts);
 
     /**
      * Closest scrollable container so accidental scroll can cancel long touch
@@ -71,17 +72,39 @@ export default class TouchSensor extends Sensor {
   }
 
   /**
+   * Add hosts. Needs fix when not attached ect.
+   * @param hosts
+   */
+  addHost(...hosts) {
+    super.addHost(...hosts);
+    hosts.forEach((host) => {
+      host.addEventListener('touchstart', this[onTouchStart], true);
+    });
+  }
+
+  /**
+   * Remove hosts. Needs fix when not attached ect.
+   * @param hosts
+   */
+  removeHost(...hosts) {
+    super.removeHost(...hosts);
+    hosts.forEach((host) => {
+      host.removeEventListener('touchstart', this[onTouchStart], true);
+    });
+  }
+
+  /**
    * Attaches sensors event listeners to the DOM
    */
   attach() {
-    document.addEventListener('touchstart', this[onTouchStart]);
+    this.addHostsEventListener('touchstart', this[onTouchStart]);
   }
 
   /**
    * Detaches sensors event listeners to the DOM
    */
   detach() {
-    document.removeEventListener('touchstart', this[onTouchStart]);
+    this.addHostsEventListener('touchstart', this[onTouchStart]);
   }
 
   /**
@@ -90,16 +113,20 @@ export default class TouchSensor extends Sensor {
    * @param {Event} event - Touch start event
    */
   [onTouchStart](event) {
-    const container = closest(event.target, this.containers);
+    const container = closest(event.target, this.containers, this.hosts);
 
     if (!container) {
       return;
     }
 
-    document.addEventListener('touchmove', this[onTouchMove]);
-    document.addEventListener('touchend', this[onTouchEnd]);
-    document.addEventListener('touchcancel', this[onTouchEnd]);
-    container.addEventListener('contextmenu', onContextMenu);
+    const {document: currentHost} = event.view;
+
+    this.initialHost = currentHost;
+
+    this.addHostsEventListener('touchmove', this[onTouchMove]);
+    this.addHostsEventListener('touchend', this[onTouchEnd]);
+    this.addHostsEventListener('touchcancel', this[onTouchEnd]);
+    this.addHostsEventListener('contextmenu', onContextMenu);
 
     this.currentContainer = container;
     this.tapTimeout = setTimeout(this[onTouchHold](event, container), this.options.delay);
@@ -147,8 +174,10 @@ export default class TouchSensor extends Sensor {
       return;
     }
 
+    const {document: currentHost} = event.view;
+
     const touch = event.touches[0] || event.changedTouches[0];
-    const target = document.elementFromPoint(touch.pageX - window.scrollX, touch.pageY - window.scrollY);
+    const target = currentHost.elementFromPoint(touch.pageX - window.scrollX, touch.pageY - window.scrollY);
 
     const dragMoveEvent = new DragMoveSensorEvent({
       clientX: touch.pageX,
@@ -170,9 +199,9 @@ export default class TouchSensor extends Sensor {
     this.touchMoved = false;
     preventScrolling = false;
 
-    document.removeEventListener('touchend', this[onTouchEnd]);
-    document.removeEventListener('touchcancel', this[onTouchEnd]);
-    document.removeEventListener('touchmove', this[onTouchMove]);
+    this.addHostsEventListener('touchend', this[onTouchEnd]);
+    this.addHostsEventListener('touchcancel', this[onTouchEnd]);
+    this.addHostsEventListener('touchmove', this[onTouchMove]);
 
     if (this.currentContainer) {
       this.currentContainer.removeEventListener('contextmenu', onContextMenu);
@@ -184,8 +213,10 @@ export default class TouchSensor extends Sensor {
       return;
     }
 
+    const {document: currentHost} = event.view;
+
     const touch = event.touches[0] || event.changedTouches[0];
-    const target = document.elementFromPoint(touch.pageX - window.scrollX, touch.pageY - window.scrollY);
+    const target = currentHost.elementFromPoint(touch.pageX - window.scrollX, touch.pageY - window.scrollY);
 
     event.preventDefault();
 

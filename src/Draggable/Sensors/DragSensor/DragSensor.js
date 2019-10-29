@@ -56,6 +56,28 @@ export default class DragSensor extends Sensor {
   }
 
   /**
+   * Add hosts. Needs fix when not attached ect.
+   * @param hosts
+   */
+  addHost(...hosts) {
+    super.addHost(...hosts);
+    hosts.forEach((host) => {
+      host.addEventListener('mousedown', this[onMouseDown], true);
+    });
+  }
+
+  /**
+   * Remove hosts. Needs fix when not attached ect.
+   * @param hosts
+   */
+  removeHost(...hosts) {
+    super.removeHost(...hosts);
+    hosts.forEach((host) => {
+      host.removeEventListener('mousedown', this[onMouseDown], true);
+    });
+  }
+
+  /**
    * Attaches sensors event listeners to the DOM
    */
   attach() {

@@ -19,9 +19,10 @@ export default class MouseSensor extends Sensor {
    * @constructs MouseSensor
    * @param {HTMLElement[]|NodeList|HTMLElement} containers - Containers
    * @param {Object} options - Options
+   * @param {DocumentOrShadowRoot} hosts - Hosts
    */
-  constructor(containers = [], options = {}) {
-    super(containers, options);
+  constructor(containers = [], options = {}, hosts = []) {
+    super(containers, options, hosts);
 
     /**
      * Indicates if mouse button is still down
@@ -44,6 +45,12 @@ export default class MouseSensor extends Sensor {
      */
     this.openedContextMenu = false;
 
+    /**
+     * Attached or not
+     * @type {boolean}
+     */
+    this.attached = false;
+
     this[onContextMenuWhileDragging] = this[onContextMenuWhileDragging].bind(this);
     this[onMouseDown] = this[onMouseDown].bind(this);
     this[onMouseMove] = this[onMouseMove].bind(this);
@@ -51,17 +58,46 @@ export default class MouseSensor extends Sensor {
   }
 
   /**
+   * Add hosts. Needs fix when not attached ect.
+   * @param hosts
+   */
+  addHost(...hosts) {
+    super.addHost(...hosts);
+    if (this.attached) {
+      hosts.forEach((host) => {
+        host.removeEventListener('mousedown', this[onMouseDown], true);
+        host.addEventListener('mousedown', this[onMouseDown], true);
+      });
+    }
+  }
+
+  /**
+   * Remove hosts. Needs fix when not attached ect.
+   * @param hosts
+   */
+  removeHost(...hosts) {
+    super.removeHost(...hosts);
+    if (this.attached) {
+      hosts.forEach((host) => {
+        host.removeEventListener('mousedown', this[onMouseDown], true);
+      });
+    }
+  }
+
+  /**
    * Attaches sensors event listeners to the DOM
    */
   attach() {
-    document.addEventListener('mousedown', this[onMouseDown], true);
+    this.attached = true;
+    this.addHostsEventListener('mousedown', this[onMouseDown], true);
   }
 
   /**
    * Detaches sensors event listeners to the DOM
    */
   detach() {
-    document.removeEventListener('mousedown', this[onMouseDown], true);
+    this.attached = false;
+    this.removeHostsEventListener('mousedown', this[onMouseDown], true);
   }
 
   /**
@@ -74,16 +110,29 @@ export default class MouseSensor extends Sensor {
       return;
     }
 
-    document.addEventListener('mouseup', this[onMouseUp]);
+    this.addHostsEventListener('mouseup', this[onMouseUp]);
+    // currentHost.addEventListener('dragstart', preventNativeDragStart);
 
-    const target = document.elementFromPoint(event.clientX, event.clientY);
-    const container = closest(target, this.containers);
+    let target = null;
+    let container = null;
+    for (const host of this.hosts) {
+      target = host.elementFromPoint(event.clientX, event.clientY);
+      if (target) {
+        container = closest(target, this.containers, [host]);
+        if (container) {
+          host.addEventListener('dragstart', preventNativeDragStart);
+          break;
+        } else {
+          target = null;
+        }
+      }
+    }
 
     if (!container) {
       return;
     }
 
-    document.addEventListener('dragstart', preventNativeDragStart);
+    this.addHostsEventListener('dragstart', preventNativeDragStart);
 
     this.mouseDown = true;
 
@@ -107,8 +156,8 @@ export default class MouseSensor extends Sensor {
       this.dragging = !dragStartEvent.canceled();
 
       if (this.dragging) {
-        document.addEventListener('contextmenu', this[onContextMenuWhileDragging]);
-        document.addEventListener('mousemove', this[onMouseMove]);
+        this.addHostsEventListener('contextmenu', this[onContextMenuWhileDragging]);
+        this.addHostsEventListener('mousemove', this[onMouseMove]);
       }
     }, this.options.delay);
   }
@@ -123,7 +172,21 @@ export default class MouseSensor extends Sensor {
       return;
     }
 
-    const target = document.elementFromPoint(event.clientX, event.clientY);
+    let target = null;
+    for (const host of this.hosts) {
+      const curr = host.elementFromPoint(event.clientX, event.clientY);
+      if (curr) {
+        let invalidFound = false;
+        for (const currHost of this.hosts) {
+          if (currHost.host === curr) {
+            invalidFound = true;
+          }
+        }
+        if (!invalidFound) {
+          target = curr;
+        }
+      }
+    }
 
     const dragMoveEvent = new DragMoveSensorEvent({
       clientX: event.clientX,
@@ -149,14 +212,20 @@ export default class MouseSensor extends Sensor {
       return;
     }
 
-    document.removeEventListener('mouseup', this[onMouseUp]);
-    document.removeEventListener('dragstart', preventNativeDragStart);
+    this.removeHostsEventListener('mouseup', this[onMouseUp]);
+    this.removeHostsEventListener('dragstart', preventNativeDragStart);
 
     if (!this.dragging) {
       return;
     }
 
-    const target = document.elementFromPoint(event.clientX, event.clientY);
+    let target = null;
+    for (const host of this.hosts) {
+      target = host.elementFromPoint(event.clientX, event.clientY);
+      if (target) {
+        break;
+      }
+    }
 
     const dragStopEvent = new DragStopSensorEvent({
       clientX: event.clientX,
@@ -168,8 +237,8 @@ export default class MouseSensor extends Sensor {
 
     this.trigger(this.currentContainer, dragStopEvent);
 
-    document.removeEventListener('contextmenu', this[onContextMenuWhileDragging]);
-    document.removeEventListener('mousemove', this[onMouseMove]);
+    this.removeHostsEventListener('contextmenu', this[onContextMenuWhileDragging]);
+    this.removeHostsEventListener('mousemove', this[onMouseMove]);
 
     this.currentContainer = null;
     this.dragging = false;
