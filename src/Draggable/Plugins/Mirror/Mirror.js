@@ -162,7 +162,7 @@ export default class Mirror extends AbstractPlugin {
       return;
     }
 
-    const appendableContainer = this[getAppendableContainer](source) || sourceContainer;
+    const appendableContainer = /*this[getAppendableContainer](source) || */sourceContainer;
     this.mirror = source.cloneNode(true);
 
     const mirrorCreatedEvent = new MirrorCreatedEvent({
