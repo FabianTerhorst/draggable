@@ -205,8 +205,13 @@ export default class Droppable extends Draggable {
       dropzone.classList.remove(this.getClassNameFor('droppable:active'));
     }
 
-    if (this.lastDropzone && this.lastDropzone !== this.initialDropzone) {
+    /* if (this.lastDropzone && this.lastDropzone !== this.initialDropzone) {
       this.initialDropzone.classList.remove(occupiedClass);
+    }*/
+
+    // This is new
+    if (this.lastDropzone) {
+      this.lastDropzone.classList.remove(occupiedClass);
     }
 
     this.dropzones = null;
@@ -229,6 +234,7 @@ export default class Droppable extends Draggable {
     this.trigger(droppableDroppedEvent);
 
     if (droppableDroppedEvent.canceled()) {
+      // add option for none add to html but not cancel event
       return false;
     }
 
@@ -238,7 +244,7 @@ export default class Droppable extends Draggable {
       this.lastDropzone.classList.remove(occupiedClass);
     }
 
-    dropzone.appendChild(event.source);
+    // dropzone.appendChild(event.source);
     dropzone.classList.add(occupiedClass);
 
     return true;
@@ -257,11 +263,11 @@ export default class Droppable extends Draggable {
 
     this.trigger(droppableReturnedEvent);
 
-    if (droppableReturnedEvent.canceled()) {
-      return;
-    }
+    // if (droppableReturnedEvent.canceled()) {
+    //  return;
+    // }
 
-    this.initialDropzone.appendChild(event.source);
+    // this.initialDropzone.appendChild(event.source);
     this.lastDropzone.classList.remove(this.getClassNameFor('droppable:occupied'));
   }
 

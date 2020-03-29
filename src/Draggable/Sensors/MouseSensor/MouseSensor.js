@@ -128,7 +128,7 @@ export default class MouseSensor extends Sensor {
       }
     }
 
-    if (!container) {
+    if (!target || !container) {
       return;
     }
 
@@ -139,6 +139,10 @@ export default class MouseSensor extends Sensor {
     clearTimeout(this.mouseDownTimeout);
     this.mouseDownTimeout = setTimeout(() => {
       if (!this.mouseDown) {
+        return;
+      }
+
+      if (!target) {
         return;
       }
 
@@ -156,6 +160,8 @@ export default class MouseSensor extends Sensor {
       this.dragging = !dragStartEvent.canceled();
 
       if (this.dragging) {
+        this.removeHostsEventListener('contextmenu', this[onContextMenuWhileDragging]);
+        this.removeHostsEventListener('mousemove', this[onMouseMove]);
         this.addHostsEventListener('contextmenu', this[onContextMenuWhileDragging]);
         this.addHostsEventListener('mousemove', this[onMouseMove]);
       }
@@ -188,6 +194,8 @@ export default class MouseSensor extends Sensor {
       }
     }
 
+    if (!target) return;
+
     const dragMoveEvent = new DragMoveSensorEvent({
       clientX: event.clientX,
       clientY: event.clientY,
@@ -214,6 +222,7 @@ export default class MouseSensor extends Sensor {
 
     this.removeHostsEventListener('mouseup', this[onMouseUp]);
     this.removeHostsEventListener('dragstart', preventNativeDragStart);
+    this.removeHostsEventListener('mousemove', this[onMouseMove]);
 
     if (!this.dragging) {
       return;
